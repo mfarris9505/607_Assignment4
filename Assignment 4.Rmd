@@ -1,0 +1,143 @@
+---
+title: "IS607 Assignment 4"
+author: "Matthew Farris"
+date: "September 20, 2015"
+output: html_document
+---
+```{r}
+library(stringr)
+```
+### Question 4 
+
+#### Part A
+For this question we were give the regular expression:[0-9]+\\$
+Breaking this down, we get [0-9] representing a single digit, the + represents a one or more instance of that single digit. The \\$ indicates a lterally \ for an end in $. This was tested using the following example:
+```{r}
+
+example.obj <- "1234 12345$12345679 9812$$58325$ 94332"
+unlist(str_extract_all(example.obj, "[0-9]+\\$"))
+
+```
+
+As you can see it only extracted digits that ended with a $. The length of digits preceeding the & were variable because of the +.
+
+#### Part B
+
+For this we were given the regular expression: \\b[a-z]{1,4}\\b
+Breaking down, we see that the whole expression is enclosed in the \\b. This means the edge of the a word, so the expression is looking for a single word. the [a-z] indicates lower cased alpha characters, with the {1,4} points to a word of 1 to 4 in length. This was tested using the following code: 
+```{r}
+
+example.obj <- "
+HAD I the heavens' embroidered cloths,
+Enwrought with golden and silver light,
+The blue and the dim and the dark cloths
+Of night and light and the half light,
+I would spread the cloths under your feet:
+But I, being poor, have only my dreams;
+I have spread my dreams under your feet;
+Tread softly because you tread on my dreams. a " 
+
+unlist(str_extract_all(example.obj, "\\b[a-z]{1,4}\\b"))
+
+```
+
+This is one of my favorite Yeats' poem provided the perfect example, as you can see only the words that were 1 to 4 in length were selected. I added a simple "a" at the end of the quote to show that single letter words were possible, but had to be lowercase. 
+
+
+#### Part C
+Breaking dow the next expression: .*?\\.txt$ we see the following. The first metacharcters indicate a selection of any number of characters as the . is used. The question mark allows for a blank value. The \\.txt$ means that the selection must end in a literal .txt. This would be most usefull when searching a database for text file names. 
+
+```{r}
+
+example.obj <- c( "apple.txt", "1.text" , "123.text" , "superman vs. Doomsday.txt", ".txt" )
+
+unlist(str_extract_all(example.obj, ".*?\\.txt$"))
+
+```
+#### Part D
+
+The breakdown of \\d{2}/\\d{2}/\\d{4} is 2 digits followed by a foreward slash then 2 more digits another foreward slash, and ending in 4 more digits. This is likely to be a date in the form of 01/01/2000
+```{r}
+
+example.obj <- c( "01-01-2001", "12/25/2015" , "09/20/2015" , "01/01/2010", "1/9/1991" )
+
+unlist(str_extract_all(example.obj, "\\d{2}/\\d{2}/\\d{4}"))
+
+```
+
+As you can see dates not in that form are not slected. (ie. only one digit for the day or month, or using -instead) 
+
+#### Part E
+
+The breakdown of this was much more difficult, so we took it in bits
+
+```{r}
+example.obj <- c( "<>", "<143 33>", "<teststest>" )
+
+unlist(str_extract_all(example.obj, "<(.+?)>"))
+```
+
+So the first part of the expression requires there to be some text inbetween < >. The second part .+? means that there must be some text of variable length. The \\1 denotes that we are backreferencing to the first grouping. As that first group was the (.+?) this is most likely a reference to an HTML code bit. The following example shows what is extracted from the data: 
+
+```{r}
+example.obj <- c( " <TITLE> Hello World! </TITLE>", " <HEAD> <TITLE> A Small Hello" )
+
+unlist(str_extract_all(example.obj, "<(.+?)>.+?</\\1>"))
+```
+
+
+### Question 5
+
+First we could rewrite the [0-9] simply as [:digit:]. We could then write {n,} to replace the +. This would read:
+
+```{r}
+example.obj <- "1234 12345$12345679 9812$$58325$ 94332"
+unlist(str_extract_all(example.obj, "[:digit:]{1,}\\$"))
+
+```
+
+### Question 6 
+
+#### Part A
+
+Using the str_replace function this could be done simply as follows:
+
+```{r}
+email <-"chunkylover53[at]aol[dot]com"
+
+email <- str_replace(email, pattern = fixed("[at]"), replacement = "@")
+email <- str_replace(email, pattern = fixed("[dot]"), replacement = ".")
+
+email
+```
+
+#### Part B
+To test why this fails we run the code for extraction as is: 
+```{r}
+unlist(str_extract_all(email, "[:digit:]"))
+```
+
+As you can see it did extract the numbers, however it extracted them separately. As we want these together it would be best to modify the phrase with a + or a {n,} quantifier. 
+
+```{r}
+unlist(str_extract_all(email, "[:digit:]{1,}"))
+```
+This extracts both digits together. 
+
+#### Part C
+Again, the best way to see why this fails is to test it:
+```{r}
+unlist(str_extract_all(email, "\\D"))
+```
+
+This code does what its program to do and extracts all sting elements that aren't digits. We essentially did the opposite of what we wanted. The \\d would be more usefully, however again we have to add a quantifier. 
+
+```{r}
+unlist(str_extract_all(email, "\\d+"))
+```
+
+
+The following code would be used if we wanted to elimiate the digits alltogether
+```{r}
+unlist(str_extract_all(email, "\\D+"))
+```
